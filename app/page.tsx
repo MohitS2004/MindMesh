@@ -12,7 +12,7 @@ export default function Home() {
         <div className="flex max-w-[980px] flex-col items-center gap-4 text-center">
           <h1 className="text-4xl font-extrabold leading-tight tracking-tighter md:text-6xl lg:text-7xl">
             Your Second Brain.{" "}
-            <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            <span className="bg-linear-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
               Always Connected.
             </span>
           </h1>
