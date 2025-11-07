@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
+import { AppShell } from "@/components/app-shell"
 
 export default async function ProtectedLayout({
   children,
@@ -13,5 +14,5 @@ export default async function ProtectedLayout({
     redirect("/sign-in")
   }
 
-  return <>{children}</>
+  return <AppShell>{children}</AppShell>
 }
