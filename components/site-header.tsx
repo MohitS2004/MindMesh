@@ -7,12 +7,11 @@ import { SignOutButton } from "@/components/sign-out-button"
 import { unstable_noStore as noStore } from 'next/cache'
 
 export async function SiteHeader() {
-  noStore() // Prevent caching of this component
+  noStore() 
   
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  // Fetch profile if user is logged in
   let profile = null
   if (user) {
     const { data } = await supabase
