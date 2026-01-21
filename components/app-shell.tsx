@@ -2,33 +2,64 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { FileText, CheckSquare, Files, Bell, MessageSquare } from 'lucide-react'
+import * as React from 'react'
+import { Bell, CheckSquare, ChevronLeft, ChevronRight, FileText, Files } from 'lucide-react'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { OrgSwitcher } from '@/components/org-switcher'
 import { TenantProvider } from '@/lib/tenant-context'
 import { cn } from '@/lib/utils'
+import { Button } from '@/components/ui/button'
 
 const navigation = [
   { name: 'Notes', href: '/app/notes', icon: FileText },
   { name: 'Tasks', href: '/app/tasks', icon: CheckSquare },
   { name: 'Files', href: '/app/files', icon: Files },
   { name: 'Reminders', href: '/app/reminders', icon: Bell },
-  { name: 'Chat', href: '/app/chat', icon: MessageSquare },
 ]
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
+  const [sidebarCollapsed, setSidebarCollapsed] = React.useState(false)
+
+  React.useEffect(() => {
+    if (typeof window === 'undefined') return
+    const stored = window.localStorage.getItem('mindmesh.sidebar.collapsed')
+    if (stored) {
+      setSidebarCollapsed(stored === 'true')
+    }
+  }, [])
+
+  React.useEffect(() => {
+    if (typeof window === 'undefined') return
+    window.localStorage.setItem('mindmesh.sidebar.collapsed', String(sidebarCollapsed))
+  }, [sidebarCollapsed])
 
   return (
     <TenantProvider>
       <div className="flex h-screen overflow-hidden">
         {/* Sidebar */}
-        <div className="hidden md:flex md:w-64 md:flex-col">
+        <div className={cn('hidden md:flex md:flex-col', sidebarCollapsed ? 'md:w-16' : 'md:w-64')}>
           <div className="flex flex-col grow border-r border-border bg-card overflow-y-auto">
-            <div className="flex items-center shrink-0 px-4 py-4 border-b border-border">
-              <h1 className="text-xl font-bold">MindMesh</h1>
+            <div className={cn('flex items-center shrink-0 border-b border-border', sidebarCollapsed ? 'px-2 py-3 justify-center' : 'px-4 py-4')}>
+              <div className={cn('flex items-center gap-2', sidebarCollapsed && 'flex-col gap-1')}>
+                <div className="flex items-center justify-center h-9 w-9 rounded-md bg-muted text-sm font-semibold">
+                  MM
+                </div>
+                <div className={cn(sidebarCollapsed && 'sr-only')}>
+                  <h1 className="text-xl font-bold">MindMesh</h1>
+                </div>
+              </div>
+              <Button
+                size="icon-sm"
+                variant="ghost"
+                className={cn(sidebarCollapsed ? 'mt-2' : 'ml-auto')}
+                onClick={() => setSidebarCollapsed((prev) => !prev)}
+                aria-label={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+              >
+                {sidebarCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+              </Button>
             </div>
-            <nav className="flex-1 px-2 py-4 space-y-1">
+            <nav className={cn('flex-1 py-4 space-y-1', sidebarCollapsed ? 'px-2' : 'px-2')}>
               {navigation.map((item) => {
                 const isActive = pathname?.startsWith(item.href)
                 return (
@@ -41,6 +72,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                         ? 'bg-accent text-accent-foreground'
                         : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
                     )}
+                    title={item.name}
                   >
                     <item.icon
                       className={cn(
@@ -50,7 +82,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                           : 'text-muted-foreground group-hover:text-accent-foreground'
                       )}
                     />
-                    {item.name}
+                    <span className={cn(sidebarCollapsed && 'sr-only')}>
+                      {item.name}
+                    </span>
                   </Link>
                 )
               })}
