@@ -4,13 +4,20 @@ import { createClient } from '@/lib/supabase/server'
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url)
   const code = searchParams.get('code')
-  const next = searchParams.get('next') ?? '/app/dashboard'
+  const next = searchParams.get('next') ?? '/app/notes'
 
   if (code) {
     const supabase = await createClient()
     const { error } = await supabase.auth.exchangeCodeForSession(code)
     
     if (!error) {
+      // Ensure personal workspace exists (calls DB function)
+      try {
+        await supabase.rpc('get_or_create_personal_workspace')
+      } catch (e) {
+        console.error('Failed to create personal workspace:', e)
+      }
+      
       const forwardedHost = request.headers.get('x-forwarded-host')
       const isLocalEnv = process.env.NODE_ENV === 'development'
       
