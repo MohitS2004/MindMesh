@@ -19,13 +19,32 @@ export async function getUserMemberships() {
       tenants (
         id,
         name,
-        slug
+        slug,
+        is_personal
       )
     `)
     .eq('user_id', user.id)
     .order('created_at', { ascending: false })
 
   return { data, error: error?.message }
+}
+
+export async function ensurePersonalWorkspace() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  
+  if (!user) {
+    return { data: null, error: 'Not authenticated' }
+  }
+
+  try {
+    const { data, error } = await supabase.rpc('get_or_create_personal_workspace')
+    if (error) throw error
+    return { data, error: null }
+  } catch (e: any) {
+    console.error('Failed to ensure personal workspace:', e)
+    return { data: null, error: e.message }
+  }
 }
 
 export async function createOrganization(formData: FormData) {
